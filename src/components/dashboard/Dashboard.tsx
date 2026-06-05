@@ -67,12 +67,15 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
     
     // Auto-select or create profile for regular employee
     if (status === "authenticated" && !isAdmin) {
-      const myProfile = loaded.find(e => e.name === userEmail);
+      // Find either by email or name (for legacy support before email was added)
+      const myProfile = loaded.find(e => e.email === userEmail || e.name === userEmail);
       if (myProfile) {
+        // Automatically migrate to have email if it doesn't
+        if (!myProfile.email) myProfile.email = userEmail;
         setActiveEmployeeId(myProfile.id);
       } else {
         // Create their personal profile
-        const newEmp: Employee = { id: generateId(), name: userEmail, entries: [] };
+        const newEmp: Employee = { id: generateId(), name: session?.user?.name || userEmail, email: userEmail, entries: [] };
         setEmployees(prev => [...prev, newEmp]);
         setActiveEmployeeId(newEmp.id);
       }

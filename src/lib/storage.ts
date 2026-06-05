@@ -57,3 +57,19 @@ export function loadEmployees(): import("./types").Employee[] {
     return [];
   }
 }
+
+export function updateEmployeeProfile(email: string, name: string, image?: string): void {
+  if (typeof window === "undefined") return;
+  const employees = loadEmployees();
+  let updated = false;
+  const newEmployees = employees.map(emp => {
+    if (emp.email === email || (!emp.email && emp.name === email)) {
+      updated = true;
+      return { ...emp, name, image, email };
+    }
+    return emp;
+  });
+  if (updated) {
+    saveEmployees(newEmployees);
+  }
+}

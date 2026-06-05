@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { 
   DropdownMenu, 
@@ -20,8 +20,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit, LogOut, User } from "lucide-react";
+import { Edit, LogOut, User, Image as ImageIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { updateEmployeeProfile } from "@/lib/storage";
 
 export function UserProfile() {
   const { data: session, update } = useSession();
@@ -29,12 +30,60 @@ export function UserProfile() {
   const [name, setName] = useState(session?.user?.name || "");
   const [image, setImage] = useState(session?.user?.image || "");
   const [isUpdating, setIsUpdating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!session?.user) return null;
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Resize to max 100x100 to save space
+        const canvas = document.createElement("canvas");
+        const MAX_SIZE = 100;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Convert to base64 jpeg
+        const base64 = canvas.toDataURL("image/jpeg", 0.7);
+        setImage(base64);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
+    
+    // Sync to admin dashboard
+    if (session?.user?.email) {
+      updateEmployeeProfile(session.user.email, name, image);
+    }
+
+    // Sync to session
     await update({ name, image });
     setIsUpdating(false);
     setIsDialogOpen(false);
@@ -92,7 +141,7 @@ export function UserProfile() {
             <DialogHeader>
               <DialogTitle>Edit Profile</DialogTitle>
               <DialogDescription>
-                Update your display name and profile picture URL.
+                Update your display name and profile picture.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -105,15 +154,35 @@ export function UserProfile() {
                   className="rounded-xl h-11"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="image">Profile Picture URL</Label>
-                <Input
-                  id="image"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="rounded-xl h-11"
-                />
+              <div className="space-y-3">
+                <Label>Profile Picture</Label>
+                <div className="flex items-center gap-4">
+                  {image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={image} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-border/50" />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <User className="h-8 w-8" />
+                    </div>
+                  )}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="rounded-xl gap-2 h-9"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                    Upload Image
+                  </Button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                </div>
               </div>
             </div>
             <DialogFooter>

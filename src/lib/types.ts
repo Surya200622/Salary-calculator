@@ -10,6 +10,8 @@ export interface WorkLogEntry {
 export interface Employee {
   id: string;
   name: string;
+  email?: string;
+  image?: string;
   entries: WorkLogEntry[];
 }
 

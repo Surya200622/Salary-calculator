@@ -47,12 +47,17 @@ export function EmployeeSelector({
             size="sm"
             onClick={() => onSelectEmployee(emp.id)}
             className={cn(
-              "gap-2 rounded-xl transition-all h-9",
+              "gap-2 rounded-xl transition-all h-9 pl-2",
               isActive && "shadow-md bg-primary text-primary-foreground",
               !isActive && "text-muted-foreground hover:text-foreground"
             )}
           >
-            <User className="h-4 w-4" />
+            {emp.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={emp.image} alt={emp.name} className="h-5 w-5 rounded-full object-cover border border-border/50 bg-background/50" />
+            ) : (
+              <User className="h-4 w-4" />
+            )}
             {emp.name}
             <span className="ml-1 text-xs opacity-60">
               ({emp.entries.length})

@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { UserProfile } from "@/components/layout/UserProfile";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -61,26 +62,7 @@ export function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {session?.user && (
-            <div className="hidden sm:flex items-center gap-2 mr-2 border-r border-border/50 pr-4">
-              {session.user.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img 
-                  src={session.user.image} 
-                  alt={session.user.name || "Profile"} 
-                  className="w-8 h-8 rounded-full border border-border/50 shadow-sm"
-                />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs uppercase shadow-sm">
-                  {session.user.name?.[0] || session.user.email?.[0] || "U"}
-                </div>
-              )}
-              <span className="text-sm font-medium tracking-tight truncate max-w-[120px]">
-                {session.user.name?.split(" ")[0] || session.user.email?.split("@")[0]}
-              </span>
-            </div>
-          )}
-          
+          <UserProfile />
           <ThemeToggle />
 
           {/* Mobile menu */}

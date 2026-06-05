@@ -33,6 +33,10 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = (user as any).role || "employee";
       }
+      if (trigger === "update" && session) {
+        if (session.name) token.name = session.name;
+        if (session.image) token.picture = session.image;
+      }
       return token;
     },
     async session({ session, token }) {

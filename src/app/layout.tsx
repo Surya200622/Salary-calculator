@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/layout/Header";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/components/providers";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -18,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Part-Time Salary Calculator | Freelancer Dashboard",
+  title: "Part-Time Salary Calculator",
   description:
     "Calculate your part-time salary from work log images using OCR. Track earnings, view analytics, and export reports. A premium freelancer dashboard.",
   keywords: ["salary calculator", "part-time", "freelancer", "work log", "OCR", "earnings tracker"],
@@ -36,12 +37,14 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background">
-        <ThemeProvider>
-          <TooltipProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-          </TooltipProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <TooltipProvider>
+              <Header />
+              <main className="flex-1">{children}</main>
+            </TooltipProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

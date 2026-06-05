@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { Save, RotateCcw } from "lucide-react";
+import { Save, RotateCcw, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +37,9 @@ import { saveHistory, saveEmployees, loadEmployees } from "@/lib/storage";
 const FIXED_HOURLY_RATE = 75;
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeEmployeeId, setActiveEmployeeId] = useState<string | null>(null);
 
@@ -44,19 +49,41 @@ export default function DashboardPage() {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  const isAdmin = (session?.user as any)?.role === "admin";
+  const userEmail = session?.user?.email || "employee";
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
   // Load from local storage on mount
   useEffect(() => {
     setMounted(true);
     const loaded = loadEmployees();
     setEmployees(loaded);
-    if (loaded.length > 0) {
+    
+    // Auto-select or create profile for regular employee
+    if (status === "authenticated" && !isAdmin) {
+      const myProfile = loaded.find(e => e.name === userEmail);
+      if (myProfile) {
+        setActiveEmployeeId(myProfile.id);
+      } else {
+        // Create their personal profile
+        const newEmp: Employee = { id: generateId(), name: userEmail, entries: [] };
+        setEmployees(prev => [...prev, newEmp]);
+        setActiveEmployeeId(newEmp.id);
+      }
+    } else if (loaded.length > 0) {
       setActiveEmployeeId(loaded[0].id);
     }
-  }, []);
+  }, [status, isAdmin, userEmail]);
 
   // Save to local storage whenever employees change
   useEffect(() => {
-    if (mounted) {
+    if (mounted && employees.length > 0) {
       saveEmployees(employees);
     }
   }, [employees, mounted]);
@@ -70,7 +97,7 @@ export default function DashboardPage() {
   const stats = calculateStats(entries);
   const insights = generateInsights(entries);
 
-  // Add a new employee
+  // Add a new employee (Admin only)
   const handleAddEmployee = useCallback((name: string) => {
     const newEmp: Employee = {
       id: generateId(),
@@ -193,7 +220,13 @@ export default function DashboardPage() {
     );
   };
 
-  if (!mounted) return null;
+  if (!mounted || status === "loading" || status === "unauthenticated") {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -201,10 +234,14 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            <span className="gradient-text">Dashboard</span>
+            <span className="gradient-text">
+              {isAdmin ? "Admin Dashboard" : "My Dashboard"}
+            </span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage employees, upload work logs & calculate salary (Fixed ₹75/hr)
+            {isAdmin 
+              ? "Manage employees, upload work logs & calculate salary" 
+              : "Upload your work logs & track your earnings"} (Fixed ₹75/hr)
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -258,16 +295,28 @@ export default function DashboardPage() {
             <RotateCcw className="h-4 w-4" />
             Clear Logs
           </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => signOut()}
+            className="gap-2 rounded-xl h-9 text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
         </div>
       </div>
 
-      {/* Employee Selector */}
-      <EmployeeSelector
-        employees={employees}
-        activeEmployeeId={activeEmployeeId}
-        onSelectEmployee={setActiveEmployeeId}
-        onAddEmployee={handleAddEmployee}
-      />
+      {/* Employee Selector (Admins Only) */}
+      {isAdmin && (
+        <EmployeeSelector
+          employees={employees}
+          activeEmployeeId={activeEmployeeId}
+          onSelectEmployee={setActiveEmployeeId}
+          onAddEmployee={handleAddEmployee}
+        />
+      )}
 
       {!activeEmployeeId ? (
         <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed rounded-2xl border-border/50 bg-card/30">

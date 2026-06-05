@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   title: "Part-Time Salary Calculator",
   description:
     "Calculate your part-time salary from work log images using OCR. Track earnings, view analytics, and export reports. A premium freelancer dashboard.",
-  keywords: ["salary calculator", "part-time", "freelancer", "work log", "OCR", "earnings tracker"],
+  keywords: ["salary calculator", "part-time", "work log", "OCR", "earnings tracker"],
 };
 
 export default function RootLayout({

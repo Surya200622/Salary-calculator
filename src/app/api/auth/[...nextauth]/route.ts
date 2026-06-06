@@ -1,6 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { cookies } from "next/headers";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -18,7 +19,6 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         
-        // Mocking user authentication since we don't have a database configured yet
         return {
           id: Math.random().toString(),
           email: credentials.email,
@@ -31,7 +31,16 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.role = (user as any).role || "employee";
+        let role = (user as any).role || "employee";
+        
+        // Check for intended_role cookie set during Google Signup
+        const cookieStore = await cookies();
+        const intendedRole = cookieStore.get("intended_role")?.value;
+        if (intendedRole === "admin") {
+          role = "admin";
+        }
+        
+        token.role = role;
       }
       if (trigger === "update" && session) {
         if (session.name) token.name = session.name;

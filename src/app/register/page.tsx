@@ -53,6 +53,10 @@ export default function RegisterPage() {
   };
 
   const handleGoogleSignup = () => {
+    if (isAdmin) {
+      document.cookie = "intended_role=admin; path=/; max-age=300";
+      localStorage.setItem("adminCreated", "true");
+    }
     signIn("google", { callbackUrl: "/" });
   };
 

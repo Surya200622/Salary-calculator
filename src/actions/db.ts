@@ -87,7 +87,7 @@ export async function getHistory(): Promise<SalaryHistory[]> {
       id: h.id,
       name: h.name,
       createdAt: h.createdAt.toISOString(),
-      entries: h.entriesJson ? JSON.parse(h.entriesJson) : [],
+      entries: h.entriesJson ? (h.entriesJson as unknown as WorkLogEntry[]) : [],
       hourlyRate: h.hourlyRate,
       totalSalary: h.totalSalary,
       totalMinutes: h.totalMinutes,
@@ -104,7 +104,7 @@ export async function saveHistoryToServer(history: SalaryHistory): Promise<void>
     where: { id: history.id },
     update: {
       name: history.name,
-      entriesJson: JSON.stringify(history.entries),
+      entriesJson: history.entries as any,
       hourlyRate: history.hourlyRate,
       totalSalary: history.totalSalary,
       totalMinutes: history.totalMinutes,
@@ -113,7 +113,7 @@ export async function saveHistoryToServer(history: SalaryHistory): Promise<void>
     create: {
       id: history.id,
       name: history.name,
-      entriesJson: JSON.stringify(history.entries),
+      entriesJson: history.entries as any,
       hourlyRate: history.hourlyRate,
       totalSalary: history.totalSalary,
       totalMinutes: history.totalMinutes,

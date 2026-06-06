@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -54,7 +55,7 @@ model HistorySnapshot {
   id           String   @id @default(cuid())
   name         String
   createdAt    DateTime @default(now())
-  entriesJson  String   // Store the entries as JSON string
+  entriesJson  Json   // Store the entries as JSON to preserve exactly what was saved
   hourlyRate   Float
   totalSalary  Float
   totalMinutes Int

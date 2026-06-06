@@ -83,7 +83,9 @@ export const authOptions: NextAuthOptions = {
         }
         return true;
       } catch (error) {
-        console.error("Database connection error during sign in:", error);
+        console.error("========================");
+        console.error("SIGN IN ERROR:", error);
+        console.error("========================");
         return false; // Will redirect to an error page instead of crashing NextAuth
       }
     },

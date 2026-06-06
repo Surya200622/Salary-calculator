@@ -15,7 +15,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ImageUploader } from "@/components/upload/ImageUploader";
 import { ManualEntryForm } from "@/components/upload/ManualEntryForm";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { DataTable } from "@/components/table/DataTable";
@@ -31,7 +30,6 @@ import {
   formatDuration,
   generateId,
 } from "@/lib/salary-calculator";
-import { extractTableFromImage } from "@/lib/ocr-engine";
 import { saveHistory, saveEmployees, loadEmployees } from "@/lib/storage";
 
 const FIXED_HOURLY_RATE = 75;
@@ -43,8 +41,6 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeEmployeeId, setActiveEmployeeId] = useState<string | null>(null);
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [ocrProgress, setOcrProgress] = useState(0);
   const [saveName, setSaveName] = useState("");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -109,37 +105,6 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
     setEmployees((prev) => [...prev, newEmp]);
     setActiveEmployeeId(newEmp.id);
   }, []);
-
-  // OCR extraction
-  const handleImageSelected = useCallback(
-    async (file: File) => {
-      if (!activeEmployeeId) return;
-      setIsProcessing(true);
-      setOcrProgress(0);
-      try {
-        const extracted = await extractTableFromImage(
-          file,
-          FIXED_HOURLY_RATE,
-          (p) => setOcrProgress(p)
-        );
-        if (extracted.length > 0) {
-          setEmployees((prev) =>
-            prev.map((emp) =>
-              emp.id === activeEmployeeId
-                ? { ...emp, entries: [...emp.entries, ...extracted] }
-                : emp
-            )
-          );
-        }
-      } catch (err) {
-        console.error("OCR error:", err);
-      } finally {
-        setIsProcessing(false);
-        setOcrProgress(0);
-      }
-    },
-    [activeEmployeeId]
-  );
 
   // Manual entry
   const handleAddEntry = useCallback(
@@ -333,13 +298,8 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
               Back to All Employees
             </Button>
           )}
-          {/* Upload Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ImageUploader
-              onImageSelected={handleImageSelected}
-              isProcessing={isProcessing}
-              progress={ocrProgress}
-            />
+          {/* Entry Section */}
+          <div className="w-full lg:w-1/2">
             <ManualEntryForm hourlyRate={FIXED_HOURLY_RATE} onAddEntry={handleAddEntry} />
           </div>
 

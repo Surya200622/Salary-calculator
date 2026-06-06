@@ -44,9 +44,9 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
       loggedTime = `${formatTime12h(fromTime)} - ${formatTime12h(toTime)}`;
     }
 
-    // Format date as DD-MM-YYYY
-    const dateObj = new Date(date);
-    const formattedDate = `${String(dateObj.getDate()).padStart(2, "0")}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${dateObj.getFullYear()}`;
+    // Format date as DD-MM-YYYY safely without timezone shifting
+    const [y, m, d] = date.split("-");
+    const formattedDate = `${d}-${m}-${y}`;
 
     const entry: WorkLogEntry = {
       id: generateId(),

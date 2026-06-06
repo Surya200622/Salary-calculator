@@ -95,7 +95,7 @@ export function UserProfile() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <div className="hidden sm:flex items-center gap-2 mr-2 border-r border-border/50 pr-4 cursor-pointer hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-2 md:mr-2 md:border-r border-border/50 md:pr-4 cursor-pointer hover:opacity-80 transition-opacity">
             {session.user.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img 
@@ -108,7 +108,7 @@ export function UserProfile() {
                 {session.user.name?.[0] || session.user.email?.[0] || "U"}
               </div>
             )}
-            <span className="text-sm font-medium tracking-tight truncate max-w-[120px]">
+            <span className="hidden sm:inline-block text-sm font-medium tracking-tight truncate max-w-[120px]">
               {displayName}
             </span>
           </div>

@@ -18,12 +18,16 @@ import { calculateStats, formatCurrency, formatDuration } from "@/lib/salary-cal
 
 interface AdminOverviewTableProps {
   employees: Employee[];
+  selectedMonth: number;
+  selectedYear: number;
   onViewEmployee: (id: string) => void;
   onAddEmployee: (name: string) => void;
 }
 
 export function AdminOverviewTable({
   employees,
+  selectedMonth,
+  selectedYear,
   onViewEmployee,
   onAddEmployee,
 }: AdminOverviewTableProps) {
@@ -43,16 +47,26 @@ export function AdminOverviewTable({
     if (e.key === "Escape") setIsAdding(false);
   };
 
-  // Compute aggregated stats for all employees
+  // Compute aggregated stats for all employees filtered by month/year
   const overviewData = useMemo(() => {
     return employees.map((emp) => {
-      const stats = calculateStats(emp.entries);
+      const filteredEntries = emp.entries.filter((entry) => {
+        const parts = entry.date.split("-");
+        if (parts.length === 3) {
+          const entryMonth = parseInt(parts[1], 10) - 1;
+          const entryYear = parseInt(parts[2], 10);
+          return entryMonth === selectedMonth && entryYear === selectedYear;
+        }
+        return true;
+      });
+      const stats = calculateStats(filteredEntries);
       return {
         ...emp,
+        filteredEntriesCount: filteredEntries.length,
         stats,
       };
     }).sort((a, b) => b.stats.totalSalaryEarned - a.stats.totalSalaryEarned);
-  }, [employees]);
+  }, [employees, selectedMonth, selectedYear]);
 
   return (
     <Card className="border border-border/50 shadow-sm animate-fade-in opacity-0 stagger-2">
@@ -146,7 +160,7 @@ export function AdminOverviewTable({
                       {emp.email || <span className="opacity-50 italic">Manual Entry</span>}
                     </TableCell>
                     <TableCell className="text-center text-sm font-medium">
-                      {emp.entries.length}
+                      {emp.filteredEntriesCount}
                     </TableCell>
                     <TableCell className="text-center text-sm text-muted-foreground">
                       {formatDuration(emp.stats.totalMinutesWorked)}

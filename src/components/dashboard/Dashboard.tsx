@@ -15,6 +15,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ManualEntryForm } from "@/components/upload/ManualEntryForm";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { DataTable } from "@/components/table/DataTable";
@@ -32,7 +39,7 @@ import {
   timeToMinutes,
   formatTime12h,
 } from "@/lib/salary-calculator";
-import { saveHistory, saveEmployees, loadEmployees } from "@/lib/storage";
+import { saveHistory, saveEmployees, loadEmployees, autoSaveMonthlySnapshots } from "@/lib/storage";
 
 const FIXED_HOURLY_RATE = 75;
 
@@ -42,6 +49,9 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeEmployeeId, setActiveEmployeeId] = useState<string | null>(null);
+
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
   const [saveName, setSaveName] = useState("");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -60,6 +70,10 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
   // Load from local storage on mount
   useEffect(() => {
     setMounted(true);
+    
+    // Auto-save any previous months to history
+    autoSaveMonthlySnapshots();
+
     const loaded = loadEmployees();
     setEmployees(loaded);
     
@@ -93,7 +107,20 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
     [employees, activeEmployeeId]
   );
 
-  const entries = activeEmployee?.entries || [];
+  const allEntries = activeEmployee?.entries || [];
+
+  const entries = useMemo(() => {
+    return allEntries.filter(entry => {
+      const parts = entry.date.split("-");
+      if (parts.length === 3) {
+        const entryMonth = parseInt(parts[1], 10) - 1;
+        const entryYear = parseInt(parts[2], 10);
+        return entryMonth === selectedMonth && entryYear === selectedYear;
+      }
+      return true;
+    });
+  }, [allEntries, selectedMonth, selectedYear]);
+
   const stats = calculateStats(entries);
   const insights = generateInsights(entries);
 
@@ -231,7 +258,38 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
               : "Upload your work logs & track your earnings"} (Fixed ₹75/hr)
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v as string, 10))}>
+            <SelectTrigger className="w-[110px] rounded-xl h-9">
+              <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <SelectItem key={i} value={i.toString()}>
+                  {new Date(0, i).toLocaleString("default", { month: "short" })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v as string, 10))}>
+            <SelectTrigger className="w-[90px] rounded-xl h-9">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 10 }).map((_, i) => {
+                const year = 2026 + i;
+                return (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+
+          <div className="w-px h-6 bg-border mx-1 hidden sm:block"></div>
+
           <ExportMenu entries={entries} stats={stats} hourlyRate={FIXED_HOURLY_RATE} />
 
           <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
@@ -298,6 +356,8 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
       {isAdmin && !activeEmployeeId ? (
         <AdminOverviewTable
           employees={employees}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
           onViewEmployee={setActiveEmployeeId}
           onAddEmployee={handleAddEmployee}
         />

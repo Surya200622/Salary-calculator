@@ -73,3 +73,62 @@ export function updateEmployeeProfile(email: string, name: string, image?: strin
     saveEmployees(newEmployees);
   }
 }
+import { generateId, calculateStats } from "./salary-calculator";
+
+export function autoSaveMonthlySnapshots(): void {
+  if (typeof window === "undefined") return;
+  const employees = loadEmployees();
+  if (employees.length === 0) return;
+
+  const existingHistory = loadAllHistory();
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  let newHistoryAdded = false;
+
+  employees.forEach(emp => {
+    const groups: Record<string, import("./types").WorkLogEntry[]> = {};
+    
+    emp.entries.forEach(entry => {
+      const parts = entry.date.split("-");
+      if (parts.length === 3) {
+        const m = parseInt(parts[1], 10) - 1;
+        const y = parseInt(parts[2], 10);
+        
+        if (y < currentYear || (y === currentYear && m < currentMonth)) {
+          const key = `${y}-${m}`;
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(entry);
+        }
+      }
+    });
+
+    Object.keys(groups).forEach(key => {
+      const [y, m] = key.split("-").map(Number);
+      const monthName = new Date(0, m).toLocaleString("default", { month: "long" });
+      const snapshotName = `${emp.name} - ${monthName} ${y} (Auto-Saved)`;
+
+      const alreadySaved = existingHistory.some(h => h.name === snapshotName);
+      
+      if (!alreadySaved) {
+        const stats = calculateStats(groups[key]);
+        const newSnapshot: SalaryHistory = {
+          id: generateId(),
+          name: snapshotName,
+          createdAt: new Date().toISOString(),
+          entries: groups[key],
+          hourlyRate: 75,
+          totalSalary: stats.totalSalaryEarned,
+          totalMinutes: stats.totalMinutesWorked,
+          totalDays: stats.totalWorkingDays,
+        };
+        existingHistory.unshift(newSnapshot);
+        newHistoryAdded = true;
+      }
+    });
+  });
+
+  if (newHistoryAdded) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existingHistory));
+  }
+}

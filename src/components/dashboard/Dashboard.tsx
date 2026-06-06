@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { Save, RotateCcw, LogOut } from "lucide-react";
+import { Save, RotateCcw, LogOut, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession, signOut } from "next-auth/react";
@@ -22,7 +22,7 @@ import { DataTable } from "@/components/table/DataTable";
 import { Charts } from "@/components/charts/Charts";
 import { AiInsightsPanel } from "@/components/insights/AiInsightsPanel";
 import { ExportMenu } from "@/components/shared/ExportMenu";
-import { EmployeeSelector } from "@/components/dashboard/EmployeeSelector";
+import { AdminOverviewTable } from "@/components/dashboard/AdminOverviewTable";
 import { WorkLogEntry, Employee } from "@/lib/types";
 import {
   calculateSalary,
@@ -79,10 +79,9 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
         setEmployees(prev => [...prev, newEmp]);
         setActiveEmployeeId(newEmp.id);
       }
-    } else if (loaded.length > 0) {
-      setActiveEmployeeId(loaded[0].id);
     }
-  }, [status, isAdmin, userEmail]);
+    // For Admins, activeEmployeeId remains null initially so they see the Overview table.
+  }, [status, isAdmin, userEmail, session?.user?.name]);
 
   // Save to local storage whenever employees change
   useEffect(() => {
@@ -311,22 +310,29 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
         </div>
       </div>
 
-      {/* Employee Selector (Admins Only) */}
-      {isAdmin && (
-        <EmployeeSelector
+      {isAdmin && !activeEmployeeId ? (
+        <AdminOverviewTable
           employees={employees}
-          activeEmployeeId={activeEmployeeId}
-          onSelectEmployee={setActiveEmployeeId}
+          onViewEmployee={setActiveEmployeeId}
           onAddEmployee={handleAddEmployee}
         />
-      )}
-
-      {!activeEmployeeId ? (
+      ) : !activeEmployeeId ? (
         <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed rounded-2xl border-border/50 bg-card/30">
           <p className="text-muted-foreground">Add an employee to get started.</p>
         </div>
       ) : (
         <div className="space-y-6 animate-fade-in">
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveEmployeeId(null)}
+              className="gap-2 text-muted-foreground hover:text-foreground mb-2 -ml-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to All Employees
+            </Button>
+          )}
           {/* Upload Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ImageUploader

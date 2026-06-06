@@ -279,7 +279,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <Select value={selectedDay.toString()} onValueChange={(v) => setSelectedDay(v === "all" ? "all" : parseInt(v, 10))}>
+          <Select value={selectedDay.toString()} onValueChange={(v) => setSelectedDay(v === "all" ? "all" : parseInt(v as string, 10))}>
             <SelectTrigger className="w-[80px] rounded-xl h-9">
               <SelectValue>{selectedDay === "all" ? "All Days" : selectedDay}</SelectValue>
             </SelectTrigger>

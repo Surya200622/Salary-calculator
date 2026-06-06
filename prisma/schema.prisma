@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  role      String   @default("employee") // "admin" or "employee"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  employee  Employee?
+}
+
+model Employee {
+  id        String   @id @default(cuid())
+  userId    String?  @unique
+  name      String
+  email     String?
+  image     String?  // Removed the max limit since Postgres handles TEXT fine
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User?      @relation(fields: [userId], references: [id])
+  entries   WorkLog[]
+}
+
+model WorkLog {
+  id           String   @id @default(cuid())
+  employeeId   String
+  date         String   // "DD-MM-YYYY"
+  fromTime     String?
+  toTime       String?
+  loggedTime   String
+  duration     String
+  totalMinutes Int
+  salary       Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model HistorySnapshot {
+  id           String   @id @default(cuid())
+  name         String
+  createdAt    DateTime @default(now())
+  entriesJson  Json   // Store the entries as JSON to preserve exactly what was saved
+  hourlyRate   Float
+  totalSalary  Float
+  totalMinutes Int
+  totalDays    Int
+}

@@ -39,7 +39,7 @@ import {
   timeToMinutes,
   formatTime12h,
 } from "@/lib/salary-calculator";
-import { saveHistory, saveEmployees, loadEmployees, autoSaveMonthlySnapshots } from "@/lib/storage";
+import { getEmployees, saveEmployeesToServer, autoSaveMonthlySnapshots, saveHistoryToServer } from "@/actions/db";
 
 const FIXED_HOURLY_RATE = 75;
 
@@ -56,6 +56,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
   const [saveName, setSaveName] = useState("");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const isAdmin = role === "admin";
   const userEmail = session?.user?.email || "employee";
@@ -67,40 +68,46 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
     }
   }, [status, router]);
 
-  // Load from local storage on mount
+  // Load from database on mount
   useEffect(() => {
     setMounted(true);
     
-    // Auto-save any previous months to history
-    autoSaveMonthlySnapshots();
+    async function initData() {
+      // Auto-save any previous months to history
+      await autoSaveMonthlySnapshots();
 
-    const loaded = loadEmployees();
-    setEmployees(loaded);
-    
-    // Auto-select or create profile for regular employee
-    if (status === "authenticated" && !isAdmin) {
-      // Find either by email or name (for legacy support before email was added)
-      const myProfile = loaded.find(e => e.email === userEmail || e.name === userEmail);
-      if (myProfile) {
-        // Automatically migrate to have email if it doesn't
-        if (!myProfile.email) myProfile.email = userEmail;
-        setActiveEmployeeId(myProfile.id);
-      } else {
-        // Create their personal profile
-        const newEmp: Employee = { id: generateId(), name: session?.user?.name || userEmail, email: userEmail, entries: [] };
-        setEmployees(prev => [...prev, newEmp]);
-        setActiveEmployeeId(newEmp.id);
+      const loaded = await getEmployees();
+      setEmployees(loaded);
+      
+      // Auto-select or create profile for regular employee
+      if (status === "authenticated" && !isAdmin) {
+        // Find either by email or name (for legacy support before email was added)
+        const myProfile = loaded.find(e => e.email === userEmail || e.name === userEmail);
+        if (myProfile) {
+          // Automatically migrate to have email if it doesn't
+          if (!myProfile.email) myProfile.email = userEmail;
+          setActiveEmployeeId(myProfile.id);
+        } else {
+          // Create their personal profile
+          const newEmp: Employee = { id: generateId(), name: session?.user?.name || userEmail, email: userEmail, entries: [] };
+          setEmployees(prev => [...prev, newEmp]);
+          setActiveEmployeeId(newEmp.id);
+        }
       }
+      setIsLoading(false);
     }
-    // For Admins, activeEmployeeId remains null initially so they see the Overview table.
+    
+    if (status === "authenticated") {
+      initData();
+    }
   }, [status, isAdmin, userEmail, session?.user?.name]);
 
-  // Save to local storage whenever employees change
+  // Save to database whenever employees change
   useEffect(() => {
-    if (mounted && employees.length > 0) {
-      saveEmployees(employees);
+    if (mounted && employees.length > 0 && !isLoading) {
+      saveEmployeesToServer(employees);
     }
-  }, [employees, mounted]);
+  }, [employees, mounted, isLoading]);
 
   const activeEmployee = useMemo(
     () => employees.find((e) => e.id === activeEmployeeId),
@@ -208,13 +215,14 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
   );
 
   // Save to history (creates snapshot)
-  const handleSaveSnapshot = () => {
-    if (!saveName.trim() || entries.length === 0 || !activeEmployee) return;
-    saveHistory({
+  const handleSaveHistory = async () => {
+    if (!saveName.trim() || !activeEmployee) return;
+    setIsLoading(true);
+    await saveHistoryToServer({
       id: generateId(),
-      name: `${activeEmployee.name} - ${saveName.trim()}`,
+      name: saveName.trim(),
       createdAt: new Date().toISOString(),
-      entries,
+      entries: entries,
       hourlyRate: FIXED_HOURLY_RATE,
       totalSalary: stats.totalSalaryEarned,
       totalMinutes: stats.totalMinutesWorked,
@@ -222,6 +230,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
     });
     setSaveName("");
     setSaveDialogOpen(false);
+    setIsLoading(false);
   };
 
   // Reset active employee entries
@@ -319,12 +328,12 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
                 onChange={(e) => setSaveName(e.target.value)}
                 className="rounded-xl"
                 id="save-name-input"
-                onKeyDown={(e) => e.key === "Enter" && handleSaveSnapshot()}
+                onKeyDown={(e) => e.key === "Enter" && handleSaveHistory()}
               />
               <DialogFooter>
-                <Button onClick={handleSaveSnapshot} disabled={!saveName.trim()} className="rounded-xl gap-2">
+                <Button onClick={handleSaveHistory} disabled={!saveName.trim() || isLoading} className="rounded-xl gap-2">
                   <Save className="h-4 w-4" />
-                  Save
+                  {isLoading ? "Saving..." : "Save"}
                 </Button>
               </DialogFooter>
             </DialogContent>

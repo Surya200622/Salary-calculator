@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link";
 import { Calculator, ShieldAlert } from "lucide-react";
 
+import { checkAdminExists } from "@/actions/auth";
+
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -20,21 +22,16 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Check if an admin was already created. 
-    // In a production app, this would be a server-side DB check.
-    const adminCreated = localStorage.getItem("adminCreated");
-    if (adminCreated !== "true") {
-      setShowAdminToggle(true);
-    }
+    checkAdminExists().then(exists => {
+      if (!exists) {
+        setShowAdminToggle(true);
+      }
+    });
   }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (isAdmin) {
-      localStorage.setItem("adminCreated", "true");
-    }
 
     // Mock registration by signing in with credentials
     const res = await signIn("credentials", {
@@ -55,7 +52,6 @@ export default function RegisterPage() {
   const handleGoogleSignup = () => {
     if (isAdmin) {
       document.cookie = "intended_role=admin; path=/; max-age=300";
-      localStorage.setItem("adminCreated", "true");
     }
     signIn("google", { callbackUrl: "/" });
   };

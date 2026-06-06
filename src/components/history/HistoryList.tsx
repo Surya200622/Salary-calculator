@@ -15,27 +15,36 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { SalaryHistory } from "@/lib/types";
-import { loadAllHistory, deleteHistory, clearAllHistory } from "@/lib/storage";
+import { getHistory, deleteHistoryFromServer, clearAllHistoryFromServer } from "@/actions/db";
 import { formatCurrency } from "@/lib/salary-calculator";
 import Link from "next/link";
 
-export function HistoryList() {
+interface HistoryListProps {
+  onDelete?: (id: string) => void;
+  onClear?: () => void;
+}
+
+export function HistoryList({ onDelete, onClear }: HistoryListProps) {
   const [history, setHistory] = useState<SalaryHistory[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setHistory(loadAllHistory());
+    getHistory().then(setHistory);
   }, []);
 
-  const handleDelete = (id: string) => {
-    deleteHistory(id);
-    setHistory(loadAllHistory());
+  const handleDelete = async (id: string) => {
+    await deleteHistoryFromServer(id);
+    setHistory((prev) => prev.filter((h) => h.id !== id));
+    onDelete?.(id);
   };
 
-  const handleClearAll = () => {
-    clearAllHistory();
+  const handleClearAll = async () => {
+    await clearAllHistoryFromServer();
     setHistory([]);
+    setClearDialogOpen(false);
+    onClear?.();
   };
 
   if (!mounted) return null;

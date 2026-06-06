@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -19,28 +20,71 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         
+        let user = await prisma.user.findUnique({ where: { email: credentials.email } });
+        
+        if (!user) {
+          // If role requested is admin, check if one already exists
+          if (credentials.role === "admin") {
+            const adminExists = await prisma.user.findFirst({ where: { role: "admin" } });
+            if (adminExists) {
+              throw new Error("An admin already exists");
+            }
+          }
+          
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              name: credentials.email.split('@')[0],
+              role: credentials.role || "employee",
+            }
+          });
+        }
+        
         return {
-          id: Math.random().toString(),
-          email: credentials.email,
-          name: credentials.email.split('@')[0],
-          role: credentials.role || "employee",
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
         };
       },
     }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        if (!user.email) return false;
+        
+        let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+        
+        if (!dbUser) {
+          let role = "employee";
+          
+          const cookieStore = await cookies();
+          const intendedRole = cookieStore.get("intended_role")?.value;
+          
+          if (intendedRole === "admin") {
+            const adminExists = await prisma.user.findFirst({ where: { role: "admin" } });
+            if (!adminExists) {
+              role = "admin";
+            }
+          }
+
+          dbUser = await prisma.user.create({
+            data: {
+              email: user.email,
+              name: user.name || user.email.split("@")[0],
+              role,
+            }
+          });
+        }
+        // Attach role to the user object for the jwt callback
+        (user as any).role = dbUser.role;
+      }
+      return true;
+    },
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        let role = (user as any).role || "employee";
-        
-        // Check for intended_role cookie set during Google Signup
-        const cookieStore = await cookies();
-        const intendedRole = cookieStore.get("intended_role")?.value;
-        if (intendedRole === "admin") {
-          role = "admin";
-        }
-        
-        token.role = role;
+        token.role = (user as any).role || "employee";
       }
       if (trigger === "update" && session) {
         if (session.name) token.name = session.name;

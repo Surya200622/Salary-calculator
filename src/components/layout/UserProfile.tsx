@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Edit, LogOut, User, Image as ImageIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { updateEmployeeProfile } from "@/lib/storage";
+import { updateEmployeeProfileOnServer } from "@/actions/db";
 
 export function UserProfile() {
   const { data: session, update } = useSession();
@@ -80,7 +80,7 @@ export function UserProfile() {
     
     // Sync to admin dashboard
     if (session?.user?.email) {
-      updateEmployeeProfile(session.user.email, name, image);
+      updateEmployeeProfileOnServer(session.user.email, name, image);
     }
 
     // Sync to session

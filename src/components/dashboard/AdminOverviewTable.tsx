@@ -76,7 +76,7 @@ export function AdminOverviewTable({
         stats,
       };
     }).sort((a, b) => b.stats.totalSalaryEarned - a.stats.totalSalaryEarned);
-  }, [employees, selectedMonth, selectedYear]);
+  }, [employees, selectedDay, selectedMonth, selectedYear]);
 
   const { totalPayout, totalTime } = useMemo(() => {
     return overviewData.reduce(

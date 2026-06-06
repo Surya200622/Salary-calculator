@@ -79,7 +79,8 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
     };
 
     onAddEntry(entry);
-    setDate("");
+    setDate(getTodayDate());
+    setIsManuallyChanged(false);
     setFromTime("");
     setToTime("");
   };

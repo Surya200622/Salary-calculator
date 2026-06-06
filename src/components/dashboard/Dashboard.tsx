@@ -355,7 +355,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
 
       {isAdmin && !activeEmployeeId ? (
         <AdminOverviewTable
-          employees={employees}
+          employees={employees.filter(emp => emp.email !== userEmail && emp.name !== userEmail)}
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
           onViewEmployee={setActiveEmployeeId}

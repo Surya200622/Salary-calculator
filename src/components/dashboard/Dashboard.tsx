@@ -29,6 +29,8 @@ import {
   generateInsights,
   formatDuration,
   generateId,
+  timeToMinutes,
+  formatTime12h,
 } from "@/lib/salary-calculator";
 import { saveHistory, saveEmployees, loadEmployees } from "@/lib/storage";
 
@@ -131,7 +133,25 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
           const newEntries = emp.entries.map((e) => {
             if (e.id !== entryId) return e;
             const newEntry = { ...e, ...updated };
-            if (updated.totalMinutes !== undefined) {
+            if (updated.fromTime !== undefined || updated.toTime !== undefined) {
+              const fromTime = updated.fromTime !== undefined ? updated.fromTime : newEntry.fromTime;
+              const toTime = updated.toTime !== undefined ? updated.toTime : newEntry.toTime;
+              newEntry.fromTime = fromTime;
+              newEntry.toTime = toTime;
+
+              if (fromTime && toTime) {
+                const calculatedMinutes = Math.max(0, timeToMinutes(toTime) - timeToMinutes(fromTime));
+                newEntry.totalMinutes = calculatedMinutes;
+                newEntry.salary = calculateSalary(calculatedMinutes, FIXED_HOURLY_RATE);
+                newEntry.duration = formatDuration(calculatedMinutes);
+                newEntry.loggedTime = `${formatTime12h(fromTime)} - ${formatTime12h(toTime)}`;
+              } else if (fromTime) {
+                newEntry.totalMinutes = 0;
+                newEntry.salary = 0;
+                newEntry.duration = "In Progress";
+                newEntry.loggedTime = `${formatTime12h(fromTime)} - In Progress`;
+              }
+            } else if (updated.totalMinutes !== undefined) {
               newEntry.salary = calculateSalary(updated.totalMinutes, FIXED_HOURLY_RATE);
               newEntry.duration = formatDuration(updated.totalMinutes);
               newEntry.loggedTime = `${updated.totalMinutes} mins`;

@@ -106,7 +106,12 @@ export function DataTable({ entries, onUpdateEntry, onDeleteEntry }: DataTablePr
 
   const startEdit = (entry: WorkLogEntry) => {
     setEditingId(entry.id);
-    setEditValues({ date: entry.date, totalMinutes: entry.totalMinutes });
+    setEditValues({ 
+      date: entry.date, 
+      totalMinutes: entry.totalMinutes,
+      fromTime: entry.fromTime,
+      toTime: entry.toTime
+    });
   };
 
   const cancelEdit = () => {
@@ -115,7 +120,7 @@ export function DataTable({ entries, onUpdateEntry, onDeleteEntry }: DataTablePr
   };
 
   const saveEdit = (id: string) => {
-    if (editValues.date !== undefined || editValues.totalMinutes !== undefined) {
+    if (Object.keys(editValues).length > 0) {
       onUpdateEntry(id, editValues);
     }
     setEditingId(null);
@@ -202,10 +207,30 @@ export function DataTable({ entries, onUpdateEntry, onDeleteEntry }: DataTablePr
                         entry.date
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{entry.loggedTime}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {editingId === entry.id && entry.fromTime !== undefined ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="time"
+                            value={editValues.fromTime || ""}
+                            onChange={(e) => setEditValues((v) => ({ ...v, fromTime: e.target.value }))}
+                            className="h-7 w-24 text-xs rounded"
+                          />
+                          <span>-</span>
+                          <Input
+                            type="time"
+                            value={editValues.toTime || ""}
+                            onChange={(e) => setEditValues((v) => ({ ...v, toTime: e.target.value }))}
+                            className="h-7 w-24 text-xs rounded"
+                          />
+                        </div>
+                      ) : (
+                        entry.loggedTime
+                      )}
+                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{entry.duration}</TableCell>
                     <TableCell className="text-sm">
-                      {editingId === entry.id ? (
+                      {editingId === entry.id && entry.fromTime === undefined ? (
                         <Input
                           type="number"
                           value={editValues.totalMinutes || 0}

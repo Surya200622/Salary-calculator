@@ -124,6 +124,20 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
+export function timeToMinutes(time?: string): number {
+  if (!time) return -1;
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+export function formatTime12h(time?: string): string {
+  if (!time) return "";
+  const [h, m] = time.split(":").map(Number);
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
 export function parseMinutesFromDuration(duration: string): number {
   // Handle formats like "3h 58m", "238 mins", "238m", "3:58", "238"
   const cleaned = duration.trim().toLowerCase();

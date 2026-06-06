@@ -8,25 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WorkLogEntry } from "@/lib/types";
-import { generateId, calculateSalary, formatDuration } from "@/lib/salary-calculator";
+import { generateId, calculateSalary, formatDuration, timeToMinutes, formatTime12h } from "@/lib/salary-calculator";
 
 interface ManualEntryFormProps {
   hourlyRate: number;
   onAddEntry: (entry: WorkLogEntry) => void;
-}
-
-function timeToMinutes(time: string): number {
-  if (!time) return -1;
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-}
-
-function formatTime12h(time: string): string {
-  if (!time) return "";
-  const [h, m] = time.split(":").map(Number);
-  const period = h >= 12 ? "PM" : "AM";
-  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
 export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps) {
@@ -36,6 +22,7 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
 
   // Calculate duration between from and to
   const calculatedMinutes = useMemo(() => {
+    if (!toTime) return 0;
     const from = timeToMinutes(fromTime);
     const to = timeToMinutes(toTime);
     if (from < 0 || to < 0) return 0;
@@ -45,11 +32,17 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !fromTime || !toTime || calculatedMinutes <= 0) return;
+    if (!date || !fromTime) return;
 
-    const salary = calculateSalary(calculatedMinutes, hourlyRate);
-    const duration = formatDuration(calculatedMinutes);
-    const loggedTime = `${formatTime12h(fromTime)} - ${formatTime12h(toTime)}`;
+    let salary = 0;
+    let duration = "In Progress";
+    let loggedTime = `${formatTime12h(fromTime)} - In Progress`;
+
+    if (toTime && calculatedMinutes > 0) {
+      salary = calculateSalary(calculatedMinutes, hourlyRate);
+      duration = formatDuration(calculatedMinutes);
+      loggedTime = `${formatTime12h(fromTime)} - ${formatTime12h(toTime)}`;
+    }
 
     // Format date as DD-MM-YYYY
     const dateObj = new Date(date);
@@ -58,6 +51,8 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
     const entry: WorkLogEntry = {
       id: generateId(),
       date: formattedDate,
+      fromTime,
+      toTime,
       loggedTime,
       duration,
       totalMinutes: calculatedMinutes,
@@ -120,7 +115,7 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="manual-to-time" className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <Clock className="h-3 w-3" />
-                To
+                To (Optional)
               </Label>
               <Input
                 id="manual-to-time"
@@ -128,7 +123,6 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
                 value={toTime}
                 onChange={(e) => setToTime(e.target.value)}
                 className="h-9 rounded-lg text-sm"
-                required
               />
             </div>
           </div>
@@ -148,10 +142,10 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
               size="sm"
               className="h-9 rounded-lg gap-1.5"
               id="add-entry-btn"
-              disabled={calculatedMinutes <= 0}
+              disabled={!date || !fromTime}
             >
               <Plus className="h-4 w-4" />
-              Add Entry
+              {toTime ? "Add Entry" : "Clock In"}
             </Button>
           </div>
         </form>

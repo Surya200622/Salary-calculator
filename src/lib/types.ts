@@ -1,6 +1,8 @@
 export interface WorkLogEntry {
   id: string;
   date: string;
+  fromTime?: string;
+  toTime?: string;
   loggedTime: string;
   duration: string;
   totalMinutes: number;

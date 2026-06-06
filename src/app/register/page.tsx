@@ -22,11 +22,17 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    checkAdminExists().then(exists => {
-      if (!exists) {
+    checkAdminExists()
+      .then(exists => {
+        if (!exists) {
+          setShowAdminToggle(true);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to check admin status:", err);
+        // If DB fails, allow toggle as fallback
         setShowAdminToggle(true);
-      }
-    });
+      });
   }, []);
 
   const handleRegister = async (e: React.FormEvent) => {

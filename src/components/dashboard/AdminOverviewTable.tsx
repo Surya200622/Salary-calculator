@@ -68,49 +68,108 @@ export function AdminOverviewTable({
     }).sort((a, b) => b.stats.totalSalaryEarned - a.stats.totalSalaryEarned);
   }, [employees, selectedMonth, selectedYear]);
 
+  const { totalPayout, totalTime } = useMemo(() => {
+    return overviewData.reduce(
+      (acc, emp) => {
+        acc.totalPayout += emp.stats.totalSalaryEarned;
+        acc.totalTime += emp.stats.totalMinutesWorked;
+        return acc;
+      },
+      { totalPayout: 0, totalTime: 0 }
+    );
+  }, [overviewData]);
+
+  const handleExportCSV = () => {
+    const headers = ["Employee Name", "Email", "Entries Count", "Total Hours", "Total Salary"];
+    const rows = overviewData.map(emp => [
+      emp.name,
+      emp.email || "Manual Entry",
+      emp.filteredEntriesCount.toString(),
+      formatDuration(emp.stats.totalMinutesWorked),
+      emp.stats.totalSalaryEarned.toString()
+    ]);
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `admin_overview_${selectedMonth + 1}_${selectedYear}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Card className="border border-border/50 shadow-sm animate-fade-in opacity-0 stagger-2">
-      <CardHeader className="pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <CardTitle className="text-xl font-bold flex items-center gap-2">
-            <Calculator className="h-5 w-5 text-primary" />
-            Employees Overview
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            View aggregated attendance and salary details for all registered and manually added employees.
-          </p>
-        </div>
-        
-        {/* Add Employee Action */}
-        <div>
-          {isAdding ? (
-            <div className="flex items-center gap-2 animate-fade-in">
-              <Input
-                autoFocus
-                placeholder="Employee name..."
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={() => {
-                  if (!newName.trim()) setIsAdding(false);
-                }}
-                className="h-9 w-40 rounded-xl text-sm"
-              />
-              <Button size="sm" onClick={handleAdd} className="h-9 rounded-xl">
-                Save
-              </Button>
-            </div>
-          ) : (
+      <CardHeader className="pb-4 flex flex-col items-start gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-4">
+          <div className="space-y-1">
+            <CardTitle className="text-xl font-bold flex items-center gap-2">
+              <Calculator className="h-5 w-5 text-primary" />
+              Employees Overview
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              View aggregated attendance and salary details for all registered and manually added employees.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsAdding(true)}
-              className="gap-2 rounded-xl h-9 text-primary hover:bg-primary/5 border-primary/20 hover:border-primary/50 transition-colors"
+              onClick={handleExportCSV}
+              className="gap-2 rounded-xl h-9"
             >
-              <Plus className="h-4 w-4" />
-              Add Employee
+              Export CSV
             </Button>
-          )}
+            
+            {isAdding ? (
+              <div className="flex items-center gap-2 animate-fade-in">
+                <Input
+                  autoFocus
+                  placeholder="Employee name..."
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={() => {
+                    if (!newName.trim()) setIsAdding(false);
+                  }}
+                  className="h-9 w-40 rounded-xl text-sm"
+                />
+                <Button size="sm" onClick={handleAdd} className="h-9 rounded-xl">
+                  Save
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAdding(true)}
+                className="gap-2 rounded-xl h-9 text-primary hover:bg-primary/5 border-primary/20 hover:border-primary/50 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                Add Employee
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Global Stats */}
+        <div className="flex flex-wrap items-center gap-6 p-4 rounded-xl bg-muted/30 border border-border/40 w-full">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Payout</p>
+            <p className="text-2xl font-bold text-primary">{formatCurrency(totalPayout)}</p>
+          </div>
+          <div className="w-px h-8 bg-border/50 hidden sm:block"></div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Time</p>
+            <p className="text-xl font-semibold">{formatDuration(totalTime)}</p>
+          </div>
+          <div className="w-px h-8 bg-border/50 hidden sm:block"></div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Employees</p>
+            <p className="text-xl font-semibold">{overviewData.filter(e => e.filteredEntriesCount > 0).length} / {overviewData.length}</p>
+          </div>
         </div>
       </CardHeader>
       

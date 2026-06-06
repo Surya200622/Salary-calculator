@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { createClient } from "@libsql/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
@@ -9,7 +9,7 @@ const createPrismaClient = () => {
     url: process.env.DATABASE_URL || "file:./dev.db", // Fallback for local testing if env vars missing
     authToken: process.env.TURSO_AUTH_TOKEN,
   });
-  const adapter = new PrismaLibSQL(libsql);
+  const adapter = new PrismaLibSql(libsql);
   return new PrismaClient({ adapter });
 };
 

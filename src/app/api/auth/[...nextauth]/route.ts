@@ -51,36 +51,41 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google") {
-        if (!user.email) return false;
-        
-        let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
-        
-        if (!dbUser) {
-          let role = "employee";
+      try {
+        if (account?.provider === "google") {
+          if (!user.email) return false;
           
-          const cookieStore = await cookies();
-          const intendedRole = cookieStore.get("intended_role")?.value;
+          let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
           
-          if (intendedRole === "admin") {
-            const adminExists = await prisma.user.findFirst({ where: { role: "admin" } });
-            if (!adminExists) {
-              role = "admin";
+          if (!dbUser) {
+            let role = "employee";
+            
+            const cookieStore = await cookies();
+            const intendedRole = cookieStore.get("intended_role")?.value;
+            
+            if (intendedRole === "admin") {
+              const adminExists = await prisma.user.findFirst({ where: { role: "admin" } });
+              if (!adminExists) {
+                role = "admin";
+              }
             }
-          }
 
-          dbUser = await prisma.user.create({
-            data: {
-              email: user.email,
-              name: user.name || user.email.split("@")[0],
-              role,
-            }
-          });
+            dbUser = await prisma.user.create({
+              data: {
+                email: user.email,
+                name: user.name || user.email.split("@")[0],
+                role,
+              }
+            });
+          }
+          // Attach role to the user object for the jwt callback
+          (user as any).role = dbUser.role;
         }
-        // Attach role to the user object for the jwt callback
-        (user as any).role = dbUser.role;
+        return true;
+      } catch (error) {
+        console.error("Database connection error during sign in:", error);
+        return false; // Will redirect to an error page instead of crashing NextAuth
       }
-      return true;
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {

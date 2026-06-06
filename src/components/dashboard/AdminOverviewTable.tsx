@@ -18,6 +18,7 @@ import { calculateStats, formatCurrency, formatDuration } from "@/lib/salary-cal
 
 interface AdminOverviewTableProps {
   employees: Employee[];
+  selectedDay: number | "all";
   selectedMonth: number;
   selectedYear: number;
   onViewEmployee: (id: string) => void;
@@ -26,6 +27,7 @@ interface AdminOverviewTableProps {
 
 export function AdminOverviewTable({
   employees,
+  selectedDay,
   selectedMonth,
   selectedYear,
   onViewEmployee,
@@ -47,15 +49,23 @@ export function AdminOverviewTable({
     if (e.key === "Escape") setIsAdding(false);
   };
 
-  // Compute aggregated stats for all employees filtered by month/year
+  // Compute aggregated stats for all employees filtered by day/month/year
   const overviewData = useMemo(() => {
     return employees.map((emp) => {
       const filteredEntries = emp.entries.filter((entry) => {
         const parts = entry.date.split("-");
         if (parts.length === 3) {
+          const entryDay = parseInt(parts[0], 10);
           const entryMonth = parseInt(parts[1], 10) - 1;
           const entryYear = parseInt(parts[2], 10);
-          return entryMonth === selectedMonth && entryYear === selectedYear;
+          
+          const monthYearMatch = entryMonth === selectedMonth && entryYear === selectedYear;
+          if (!monthYearMatch) return false;
+          
+          if (selectedDay !== "all") {
+             return entryDay === selectedDay;
+          }
+          return true;
         }
         return true;
       });

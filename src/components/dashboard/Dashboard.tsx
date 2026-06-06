@@ -50,8 +50,11 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeEmployeeId, setActiveEmployeeId] = useState<string | null>(null);
 
+  const [selectedDay, setSelectedDay] = useState<number | "all">(new Date().getDate());
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+
+  const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
 
   const [saveName, setSaveName] = useState("");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -120,13 +123,21 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
     return allEntries.filter(entry => {
       const parts = entry.date.split("-");
       if (parts.length === 3) {
+        const entryDay = parseInt(parts[0], 10);
         const entryMonth = parseInt(parts[1], 10) - 1;
         const entryYear = parseInt(parts[2], 10);
-        return entryMonth === selectedMonth && entryYear === selectedYear;
+        
+        const monthYearMatch = entryMonth === selectedMonth && entryYear === selectedYear;
+        if (!monthYearMatch) return false;
+        
+        if (selectedDay !== "all") {
+           return entryDay === selectedDay;
+        }
+        return true;
       }
       return true;
     });
-  }, [allEntries, selectedMonth, selectedYear]);
+  }, [allEntries, selectedDay, selectedMonth, selectedYear]);
 
   const stats = calculateStats(entries);
   const insights = generateInsights(entries);
@@ -268,6 +279,20 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <Select value={selectedDay.toString()} onValueChange={(v) => setSelectedDay(v === "all" ? "all" : parseInt(v, 10))}>
+            <SelectTrigger className="w-[80px] rounded-xl h-9">
+              <SelectValue>{selectedDay === "all" ? "All Days" : selectedDay}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              {Array.from({ length: daysInMonth }).map((_, i) => (
+                <SelectItem key={i + 1} value={(i + 1).toString()}>
+                  {i + 1}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v as string, 10))}>
             <SelectTrigger className="w-[110px] rounded-xl h-9">
               <SelectValue>{new Date(0, selectedMonth).toLocaleString("default", { month: "short" })}</SelectValue>
@@ -365,6 +390,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
       {isAdmin && !activeEmployeeId ? (
         <AdminOverviewTable
           employees={employees.filter(emp => emp.email !== userEmail && emp.name !== userEmail)}
+          selectedDay={selectedDay}
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
           onViewEmployee={setActiveEmployeeId}

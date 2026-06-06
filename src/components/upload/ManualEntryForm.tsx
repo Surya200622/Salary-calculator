@@ -16,9 +16,28 @@ interface ManualEntryFormProps {
 }
 
 export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps) {
-  const [date, setDate] = useState("");
+  const getTodayDate = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  const [date, setDate] = useState(getTodayDate());
+  const [isManuallyChanged, setIsManuallyChanged] = useState(false);
   const [fromTime, setFromTime] = useState("");
   const [toTime, setToTime] = useState("");
+
+  // Automatically refresh the date to the next day when midnight passes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isManuallyChanged) {
+        const today = getTodayDate();
+        if (date !== today) {
+          setDate(today);
+        }
+      }
+    }, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [isManuallyChanged, date]);
 
   // Calculate duration between from and to
   const calculatedMinutes = useMemo(() => {
@@ -87,7 +106,10 @@ export function ManualEntryForm({ hourlyRate, onAddEntry }: ManualEntryFormProps
               id="manual-date"
               type="date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => {
+                setDate(e.target.value);
+                setIsManuallyChanged(true);
+              }}
               className="h-9 rounded-lg text-sm"
               required
             />

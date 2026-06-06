@@ -270,7 +270,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v as string, 10))}>
             <SelectTrigger className="w-[110px] rounded-xl h-9">
-              <SelectValue placeholder="Month" />
+              <SelectValue>{new Date(0, selectedMonth).toLocaleString("default", { month: "short" })}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {Array.from({ length: 12 }).map((_, i) => (
@@ -283,7 +283,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
 
           <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v as string, 10))}>
             <SelectTrigger className="w-[90px] rounded-xl h-9">
-              <SelectValue placeholder="Year" />
+              <SelectValue>{selectedYear}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {Array.from({ length: 10 }).map((_, i) => {
@@ -388,9 +388,11 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
             </Button>
           )}
           {/* Entry Section */}
-          <div className="w-full lg:w-1/2">
-            <ManualEntryForm hourlyRate={FIXED_HOURLY_RATE} onAddEntry={handleAddEntry} />
-          </div>
+          {!isAdmin && (
+            <div className="w-full lg:w-1/2">
+              <ManualEntryForm hourlyRate={FIXED_HOURLY_RATE} onAddEntry={handleAddEntry} />
+            </div>
+          )}
 
           {/* Stats Cards */}
           {entries.length > 0 && <StatsCards stats={stats} />}
@@ -400,6 +402,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
             entries={entries}
             onUpdateEntry={handleUpdateEntry}
             onDeleteEntry={handleDeleteEntry}
+            readOnly={isAdmin}
           />
 
           {/* Charts */}

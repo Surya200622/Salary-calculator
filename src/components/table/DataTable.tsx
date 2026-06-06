@@ -32,11 +32,12 @@ interface DataTableProps {
   entries: WorkLogEntry[];
   onUpdateEntry: (id: string, updated: Partial<WorkLogEntry>) => void;
   onDeleteEntry: (id: string) => void;
+  readOnly?: boolean;
 }
 
 const PAGE_SIZE = 10;
 
-export function DataTable({ entries, onUpdateEntry, onDeleteEntry }: DataTableProps) {
+export function DataTable({ entries, onUpdateEntry, onDeleteEntry, readOnly = false }: DataTableProps) {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -180,7 +181,9 @@ export function DataTable({ entries, onUpdateEntry, onDeleteEntry }: DataTablePr
                     Salary <SortIcon field="salary" />
                   </div>
                 </TableHead>
-                <TableHead className="text-xs font-semibold text-right w-24">Actions</TableHead>
+                {!readOnly && (
+                  <TableHead className="text-xs font-semibold text-right w-24">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -244,47 +247,49 @@ export function DataTable({ entries, onUpdateEntry, onDeleteEntry }: DataTablePr
                     <TableCell className="text-sm font-semibold text-primary">
                       {formatCurrency(entry.salary)}
                     </TableCell>
-                    <TableCell className="text-right">
-                      {editingId === entry.id ? (
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-chart-2 hover:text-chart-2 hover:bg-chart-2/10"
-                            onClick={() => saveEdit(entry.id)}
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                            onClick={cancelEdit}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                            onClick={() => startEdit(entry)}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => onDeleteEntry(entry.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
+                    {!readOnly && (
+                      <TableCell className="text-right">
+                        {editingId === entry.id ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-chart-2 hover:text-chart-2 hover:bg-chart-2/10"
+                              onClick={() => saveEdit(entry.id)}
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              onClick={cancelEdit}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                              onClick={() => startEdit(entry)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => onDeleteEntry(entry.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}

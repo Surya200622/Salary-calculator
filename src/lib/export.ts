@@ -1,5 +1,8 @@
 import { WorkLogEntry, DashboardStats } from "./types";
 import { formatCurrency } from "./salary-calculator";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export function exportToCSV(entries: WorkLogEntry[], stats: DashboardStats): void {
   const headers = ["Date", "Logged Time", "Duration", "Total Minutes", "Salary (₹)"];
@@ -7,27 +10,26 @@ export function exportToCSV(entries: WorkLogEntry[], stats: DashboardStats): voi
 
   // Add summary rows
   rows.push([]);
-  rows.push(["Summary"]);
+  rows.push(["Summary", ""]);
   rows.push(["Total Working Days", stats.totalWorkingDays.toString()]);
   rows.push(["Total Minutes", stats.totalMinutesWorked.toString()]);
   rows.push(["Total Hours", stats.totalHoursWorked.toFixed(2)]);
-  rows.push(["Total Salary", formatCurrency(stats.totalSalaryEarned)]);
-  rows.push(["Average Daily Earnings", formatCurrency(stats.averageDailyEarnings)]);
+  rows.push(["Total Salary", stats.totalSalaryEarned.toString()]);
+  rows.push(["Average Daily Earnings", stats.averageDailyEarnings.toString()]);
 
-  const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+  // Use BOM so Excel opens CSV with correct encoding
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   downloadBlob(blob, "salary-report.csv");
 }
 
 export async function exportToExcel(entries: WorkLogEntry[], stats: DashboardStats): Promise<void> {
-  const XLSX = await import("xlsx");
-
   const wsData = [
     ["Date", "Logged Time", "Duration", "Total Minutes", "Salary (₹)"],
     ...entries.map((e) => [e.date, e.loggedTime, e.duration, e.totalMinutes, e.salary]),
     [],
-    ["Summary"],
+    ["Summary", ""],
     ["Total Working Days", stats.totalWorkingDays],
     ["Total Minutes", stats.totalMinutesWorked],
     ["Total Hours", stats.totalHoursWorked],
@@ -50,9 +52,6 @@ export async function exportToPDF(
   stats: DashboardStats,
   hourlyRate: number
 ): Promise<void> {
-  const { default: jsPDF } = await import("jspdf");
-  const { default: autoTable } = await import("jspdf-autotable");
-
   const doc = new jsPDF();
 
   // Title

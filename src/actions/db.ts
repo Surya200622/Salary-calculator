@@ -202,4 +202,16 @@ export async function updateEmployeeProfileOnServer(email: string, name: string,
       data: { name, email, image }
     });
   }
+
+  // Also sync the User table so future logins (credentials or OAuth) fetch the updated name
+  const dbUser = await prisma.user.findFirst({
+    where: { email }
+  });
+
+  if (dbUser) {
+    await prisma.user.update({
+      where: { id: dbUser.id },
+      data: { name }
+    });
+  }
 }

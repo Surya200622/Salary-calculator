@@ -56,6 +56,7 @@ export const authOptions: NextAuthOptions = {
           if (!user.email) return false;
           
           let dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+          let employee = await prisma.employee.findFirst({ where: { email: user.email } });
           
           if (!dbUser) {
             let role = "employee";
@@ -80,6 +81,14 @@ export const authOptions: NextAuthOptions = {
           }
           // Attach role to the user object for the jwt callback
           (user as any).role = dbUser.role;
+          
+          // Override Google defaults with saved DB values
+          if (employee) {
+            if (employee.name) user.name = employee.name;
+            if (employee.image) user.image = employee.image;
+          } else if (dbUser.name) {
+            user.name = dbUser.name;
+          }
         }
         return true;
       } catch (error) {

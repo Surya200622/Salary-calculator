@@ -19,10 +19,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Part-Time Salary Calculator",
+  title: "Attendance Management System",
   description:
-    "Calculate your part-time salary from work log images using OCR. Track earnings, view analytics, and export reports. A premium freelancer dashboard.",
-  keywords: ["salary calculator", "part-time", "work log", "OCR", "earnings tracker"],
+    "Track your attendance, calculate your salary, view analytics, and export reports.",
+  keywords: ["attendance calculator", "part-time", "work log", "OCR", "earnings tracker"],
   icons: {
     icon: "/icon graphics.webp",
     apple: "/icon graphics.webp",

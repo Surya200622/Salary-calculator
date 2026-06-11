@@ -311,7 +311,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
               <SelectValue>{selectedYear}</SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {Array.from({ length: 10 }).map((_, i) => {
+              {Array.from({ length: 35 }).map((_, i) => {
                 const year = 2026 + i;
                 return (
                   <SelectItem key={year} value={year.toString()}>

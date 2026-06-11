@@ -24,10 +24,9 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-lg shadow-primary/25 transition-transform duration-300 group-hover:scale-110">
+          <div className="relative transition-transform duration-300 group-hover:scale-110">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon graphics.webp" alt="Logo" className="h-9 w-9 object-contain" />
-            <div className="absolute inset-0 rounded-xl bg-primary/20 blur-lg transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
+            <img src="/icon graphics.webp" alt="Salary Calculator" className="h-9 w-auto dark:brightness-0 dark:invert" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-bold tracking-tight sm:text-base">
@@ -77,9 +76,9 @@ export function Header() {
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               <div className="flex flex-col gap-4 mt-8">
                 <div className="flex items-center gap-3 px-2 mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-lg">
+                  <div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/icon graphics.webp" alt="Logo" className="h-10 w-10 object-contain" />
+                    <img src="/icon graphics.webp" alt="Salary Calculator" className="h-10 w-auto dark:brightness-0 dark:invert" />
                   </div>
                   <div>
                     <p className="text-sm font-bold">Salary Calculator</p>

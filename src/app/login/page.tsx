@@ -41,9 +41,9 @@ export default function LoginPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-3 items-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl overflow-hidden shadow-lg shadow-primary/25">
+          <div className="flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon graphics.webp" alt="Logo" className="h-12 w-12 object-contain" />
+            <img src="/icon graphics.webp" alt="Salary Calculator" className="h-12 w-auto dark:brightness-0 dark:invert" />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
           <CardDescription>Login to manage your part-time salary</CardDescription>

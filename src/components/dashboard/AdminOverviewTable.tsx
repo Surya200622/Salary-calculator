@@ -116,7 +116,7 @@ export function AdminOverviewTable({
           <div className="space-y-1">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/icon graphics.webp" alt="Logo" className="h-6 w-auto dark:brightness-0 dark:invert" />
+              <img src="/icon-graphics.webp" alt="Logo" className="h-6 w-auto dark:brightness-0 dark:invert" />
               Employees Overview
             </CardTitle>
             <p className="text-sm text-muted-foreground">

@@ -26,7 +26,7 @@ export function Header() {
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative transition-transform duration-300 group-hover:scale-110">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon graphics.webp" alt="Salary Calculator" className="h-9 w-auto dark:brightness-0 dark:invert" />
+            <img src="/icon-graphics.webp" alt="Salary Calculator" className="h-9 w-auto dark:brightness-0 dark:invert" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-bold tracking-tight sm:text-base">
@@ -78,10 +78,10 @@ export function Header() {
                 <div className="flex items-center gap-3 px-2 mb-4">
                   <div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/icon graphics.webp" alt="Salary Calculator" className="h-10 w-auto dark:brightness-0 dark:invert" />
+                    <img src="/icon-graphics.webp" alt="Salary Calculator" className="h-10 w-auto dark:brightness-0 dark:invert" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold">Attendance Managment System</p>
+                    <p className="text-sm font-bold">Attendance Management System</p>
                     <p className="text-xs text-muted-foreground">Part-Time Dashboard</p>
                   </div>
                 </div>

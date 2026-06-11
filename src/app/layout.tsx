@@ -19,13 +19,35 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://attendance-calculator-dashboard.vercel.app"),
   title: "Attendance Management System",
   description:
     "Track your attendance, calculate your salary, view analytics, and export reports.",
-  keywords: ["attendance calculator", "part-time", "work log", "OCR", "earnings tracker"],
+  keywords: ["attendance calculator", "part-time", "work log", "OCR", "earnings tracker", "attendance management"],
   icons: {
-    icon: "/icon graphics.webp",
-    apple: "/icon graphics.webp",
+    icon: "/icon-graphics.webp",
+    apple: "/icon-graphics.webp",
+  },
+  openGraph: {
+    title: "Attendance Management System",
+    description: "Track your attendance, calculate your salary, view analytics, and export reports.",
+    url: "https://attendance-calculator-dashboard.vercel.app",
+    siteName: "Attendance Management System",
+    images: [
+      {
+        url: "/icon-graphics.webp",
+        width: 800,
+        height: 600,
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Attendance Management System",
+    description: "Track your attendance, calculate your salary, view analytics, and export reports.",
+    images: ["/icon-graphics.webp"],
   },
 };
 

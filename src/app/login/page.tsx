@@ -43,10 +43,10 @@ export default function LoginPage() {
         <CardHeader className="space-y-3 items-center text-center">
           <div className="flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon graphics.webp" alt="Salary Calculator" className="h-12 w-auto dark:brightness-0 dark:invert" />
+            <img src="/icon-graphics.webp" alt="Attendance Management System" className="h-10 w-auto dark:brightness-0 dark:invert" />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-          <CardDescription>Login to manage your part-time salary</CardDescription>
+          <CardDescription>Login to manage your attendance</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button variant="outline" className="w-full gap-2 rounded-xl h-11" onClick={handleGoogleLogin}>

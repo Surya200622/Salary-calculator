@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Calculator } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,8 +41,9 @@ export default function LoginPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
       <Card className="w-full max-w-md border-border/50 shadow-xl">
         <CardHeader className="space-y-3 items-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-            <Calculator className="h-6 w-6" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl overflow-hidden shadow-lg shadow-primary/25">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon graphics.webp" alt="Logo" className="h-12 w-12 object-cover" />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
           <CardDescription>Login to manage your part-time salary</CardDescription>

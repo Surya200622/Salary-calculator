@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { User, ChevronRight, Plus, Calculator } from "lucide-react";
+import { User, ChevronRight, Plus } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -115,7 +115,8 @@ export function AdminOverviewTable({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-4">
           <div className="space-y-1">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
-              <Calculator className="h-5 w-5 text-primary" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon graphics.webp" alt="Logo" className="h-6 w-6 rounded" />
               Employees Overview
             </CardTitle>
             <p className="text-sm text-muted-foreground">

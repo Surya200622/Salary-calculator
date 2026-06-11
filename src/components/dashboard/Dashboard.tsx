@@ -401,7 +401,7 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
           <p className="text-muted-foreground">Add an employee to get started.</p>
         </div>
       ) : (
-        <div className="space-y-6 animate-fade-in">
+        <div className="flex flex-col gap-6 animate-fade-in">
           {isAdmin && (
             <Button
               variant="ghost"
@@ -415,27 +415,41 @@ export function Dashboard({ role }: { role: "admin" | "employee" }) {
           )}
           {/* Entry Section */}
           {!isAdmin && (
-            <div className="w-full lg:w-1/2">
+            <div className="w-full lg:w-1/2 order-1">
               <ManualEntryForm hourlyRate={FIXED_HOURLY_RATE} onAddEntry={handleAddEntry} />
             </div>
           )}
 
           {/* Stats Cards */}
-          {entries.length > 0 && <StatsCards stats={stats} />}
+          {entries.length > 0 && (
+            <div className="order-3 lg:order-2 w-full">
+              <StatsCards stats={stats} />
+            </div>
+          )}
 
           {/* Data Table */}
-          <DataTable
-            entries={entries}
-            onUpdateEntry={handleUpdateEntry}
-            onDeleteEntry={handleDeleteEntry}
-            readOnly={isAdmin}
-          />
+          <div className="order-2 lg:order-3 w-full">
+            <DataTable
+              entries={entries}
+              onUpdateEntry={handleUpdateEntry}
+              onDeleteEntry={handleDeleteEntry}
+              readOnly={isAdmin}
+            />
+          </div>
 
           {/* Charts */}
-          {entries.length > 0 && <Charts entries={entries} />}
+          {entries.length > 0 && (
+            <div className="order-4 w-full">
+              <Charts entries={entries} />
+            </div>
+          )}
 
           {/* AI Insights */}
-          {entries.length > 0 && <AiInsightsPanel insights={insights} />}
+          {entries.length > 0 && (
+            <div className="order-5 w-full">
+              <AiInsightsPanel insights={insights} />
+            </div>
+          )}
         </div>
       )}
     </div>

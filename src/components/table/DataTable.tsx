@@ -269,7 +269,7 @@ export function DataTable({ entries, onUpdateEntry, onDeleteEntry, readOnly = fa
                             </Button>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                             <Button
                               variant="ghost"
                               size="icon"

@@ -101,10 +101,10 @@ export function UserProfile() {
               <img 
                 src={session.user.image} 
                 alt={session.user.name || "Profile"} 
-                className="w-8 h-8 rounded-full border border-border/50 shadow-sm object-cover"
+                className="w-8 h-8 shrink-0 rounded-full border border-border/50 shadow-sm object-cover"
               />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs uppercase shadow-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs uppercase shadow-sm">
                 {session.user.name?.[0] || session.user.email?.[0] || "U"}
               </div>
             )}

@@ -26,7 +26,7 @@ export function Header() {
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-lg shadow-primary/25 transition-transform duration-300 group-hover:scale-110">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon graphics.webp" alt="Logo" className="h-9 w-9 object-cover" />
+            <img src="/icon graphics.webp" alt="Logo" className="h-9 w-9 object-contain" />
             <div className="absolute inset-0 rounded-xl bg-primary/20 blur-lg transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
           </div>
           <div className="flex flex-col">
@@ -79,7 +79,7 @@ export function Header() {
                 <div className="flex items-center gap-3 px-2 mb-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-lg">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/icon graphics.webp" alt="Logo" className="h-10 w-10 object-cover" />
+                    <img src="/icon graphics.webp" alt="Logo" className="h-10 w-10 object-contain" />
                   </div>
                   <div>
                     <p className="text-sm font-bold">Salary Calculator</p>

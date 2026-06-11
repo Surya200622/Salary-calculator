@@ -30,7 +30,7 @@ export function Header() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-bold tracking-tight sm:text-base">
-              Attendance management system
+              Attendance Management System
             </span>
             <span className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase hidden sm:block">
               Part-Time Dashboard
@@ -81,7 +81,7 @@ export function Header() {
                     <img src="/icon graphics.webp" alt="Salary Calculator" className="h-10 w-auto dark:brightness-0 dark:invert" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold">Salary Calculator</p>
+                    <p className="text-sm font-bold">Attendance Managment System</p>
                     <p className="text-xs text-muted-foreground">Part-Time Dashboard</p>
                   </div>
                 </div>
